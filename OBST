@@ -1,0 +1,75 @@
+#include <iostream>
+#include <climits>
+
+using namespace std;
+
+// Recursive function to print the optimal BST structure
+void printBST(int i, int j, double e[4][4], double w[4][4], string keys[]) {
+    if (i > j) return;
+
+    int root = i;  // Initial root is the first key in the range
+
+    // Find the root of the subtree
+    for (int r = i; r <= j; r++) {
+        if (e[i][j] == e[i][r - 1] + e[r + 1][j] + w[i][j]) {
+            root = r;
+            break;
+        }
+    }
+
+    // Print the root of this subtree
+    cout << "Root of the subtree [" << i << ", " << j << "] is: " << keys[root - 1] << endl;
+
+    // Recurse for left and right subtrees
+    printBST(i, root - 1, e, w, keys);
+    printBST(root + 1, j, e, w, keys);
+}
+
+int main() {
+    // Input: Sorted keys and their corresponding probabilities
+    string keys[] = {"k1", "k2", "k3"};
+    double probabilities[] = {0.1, 0.4, 0.3};
+    double q[] = {0.2, 0.2, 0.1, 0.3};  // Unsuccessful search probabilities
+
+    int n = 3;  // Number of keys
+    double e[4][4] = {0};  // e[i][j] represents the minimum cost for keys i to j
+    double w[4][4] = {0};  // w[i][j] is the sum of probabilities from keys i to j
+
+    // Base cases when there's only one key
+    for (int i = 1; i <= n; i++) {
+        e[i][i] = q[i - 1] + probabilities[i - 1] + q[i];
+        w[i][i] = probabilities[i - 1] + q[i - 1] + q[i];
+    }
+
+    // Calculate minimum cost for each range of keys
+    for (int length = 2; length <= n; length++) {  // length of the subarray
+        for (int i = 1; i <= n - length + 1; i++) {  // i is the starting index
+            int j = i + length - 1;  // j is the end index of the range
+
+            // Compute w[i][j] (the sum of probabilities from i to j)
+            w[i][j] = w[i][j - 1] + probabilities[j - 1] + q[j];
+
+            // Initialize e[i][j] to a large number for comparison
+            e[i][j] = INT_MAX;
+
+            // Try every key as the root of the subtree and find the minimum cost
+            for (int r = i; r <= j; r++) {
+                double cost = e[i][r - 1] + e[r + 1][j] + w[i][j];
+                if (cost < e[i][j]) {
+                    e[i][j] = cost;
+                }
+            }
+        }
+    }
+
+    // Print the minimum cost of the optimal BST
+    cout << "Minimum search cost for the optimal BST: " << e[1][n] << endl;
+
+    // Print the structure of the optimal BST (recursive print based on e[i][j])
+    cout << "\nOptimal BST structure:" << endl;
+    
+    // Call the recursive function to print the optimal BST structure
+    printBST(1, n, e, w, keys);
+
+    return 0;
+}
