@@ -1,0 +1,88 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// Structure to represent an edge
+struct Edge {
+    int src, dest, weight;
+};
+
+// Disjoint Set (Union-Find)
+class DisjointSet {
+    vector<int> parent, rank;
+
+public:
+    DisjointSet(int n) {
+        parent.resize(n);
+        rank.resize(n, 0);
+        for (int i = 0; i < n; ++i)
+            parent[i] = i;
+    }
+
+    int find(int u) {
+        if (u != parent[u])
+            parent[u] = find(parent[u]);
+        return parent[u];
+    }
+
+    void unionSets(int u, int v) {
+        int rootU = find(u);
+        int rootV = find(v);
+        if (rootU != rootV) {
+            if (rank[rootU] < rank[rootV])
+                parent[rootU] = rootV;
+            else if (rank[rootU] > rank[rootV])
+                parent[rootV] = rootU;
+            else {
+                parent[rootV] = rootU;
+                rank[rootU]++;
+            }
+        }
+    }
+};
+
+// Function to find MST using Kruskal's Algorithm
+void findMST(vector<Edge>& edges, int numOffices) {
+    // Sort edges by weight
+    sort(edges.begin(), edges.end(), [](Edge a, Edge b) {
+        return a.weight < b.weight;
+    });
+
+    DisjointSet ds(numOffices);
+    vector<Edge> mst;
+    int totalCost = 0;
+
+    for (const Edge& edge : edges) {
+        if (ds.find(edge.src) != ds.find(edge.dest)) {
+            mst.push_back(edge);
+            ds.unionSets(edge.src, edge.dest);
+            totalCost += edge.weight;
+        }
+    }
+
+    // Print the MST
+    cout << "Minimum Spanning Tree Connections:\n";
+    cout << "Office1\tOffice2\tCost\n";
+    for (const Edge& e : mst)
+        cout << e.src << "\t" << e.dest << "\t" << e.weight << "\n";
+
+    cout << "Total Minimum Cost: " << totalCost << endl;
+}
+
+int main() {
+    int numOffices, numConnections;
+    cout << "Enter number of offices: ";
+    cin >> numOffices;
+    cout << "Enter number of possible connections: ";
+    cin >> numConnections;
+
+    vector<Edge> edges(numConnections);
+    cout << "Enter connections (source destination cost):\n";
+    for (int i = 0; i < numConnections; ++i)
+        cin >> edges[i].src >> edges[i].dest >> edges[i].weight;
+
+    findMST(edges, numOffices);
+
+    return 0;
+}
