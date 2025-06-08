@@ -1,3 +1,4 @@
+
 #include <iostream>
 #define MAX 20//we can inserted easily 20 offices
 #define INF 9999//INF infinite value 
